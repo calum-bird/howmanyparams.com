@@ -84,7 +84,7 @@ export default function Home() {
           Made by{" "}
           <a
             className="text-blue-300 hover:border-b hover:border-blue-300"
-            href="https://twitter.com/calum-birdo"
+            href="https://twitter.com/calumbirdo"
           >
             Calum Bird
           </a>
