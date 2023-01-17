@@ -1,45 +1,19 @@
 import Head from "next/head";
-import { useEffect, useState } from "react";
-import { loss, flops, n_opt, d_opt } from "../lib/llm";
-import { hparams, models } from "../lib/presets";
-import ModelSelector from "../components/ModelSelector";
+import { useState } from "react";
 import ModeSelector from "../components/ModeSelector";
+import Modalities from "../components/Modalities";
+import Calculator from "../components/Calculator";
+import { setModality } from "../lib/llm";
 
 export default function Home() {
-  const [preset, setPreset] = useState("palm");
+  const [selectedMode, setSelectedMode] = useState("Params");
 
-  const [n, setN] = useState(0);
-  const [d, setD] = useState(0);
-  const [f, setF] = useState(0);
-  const [l, setL] = useState(0);
-  const [nopt, setNopt] = useState(0);
-  const [dopt, setDopt] = useState(0);
+  const modalities = ["code", "image", "speech", "text"];
+  const [selectedModality, setSelectedModality] = useState(modalities[0]);
 
-  const [mode, setMode] = useState("optimal");
-
-  useEffect(() => {
-    // Update all our predictions based on n and d
-    const f = flops(n, d);
-    const l = loss(n, d);
-    setF(f);
-    setL(l);
-    setNopt(n_opt(f));
-    setDopt(d_opt(f));
-
-    console.group("LLM Computations");
-    console.log("f", f);
-    console.log("l", l);
-    console.log("n + n_opt", n, n_opt(f));
-    console.log("d + d_opt", d, d_opt(f));
-    console.groupEnd();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [d, n]);
-
-  const switchPreset = (preset: string) => {
-    setPreset(preset);
-    setN(hparams[preset].n);
-    setD(hparams[preset].d);
+  const setGlobalModality = (modality: string) => {
+    setSelectedModality(modality);
+    setModality(modality);
   };
 
   return (
@@ -51,28 +25,79 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="m-5">
+      <main className="w-2/3 m-5 mx-auto">
         <h1 className="text-3xl text-gray-200">Compute-Optimal LLMs</h1>
         <p className="text-base text-gray-300">
           This tool helps you find the optimal LLM given your compute budget.
           Alternatively, you can also use it to find the optimal compute budget
-          for a planned model.
+          for a planned model. The tool is highly based on the work of{" "}
+          <a
+            className="text-blue-300 hover:border-b hover:border-blue-300"
+            href="https://arxiv.org/abs/2001.08361"
+          >
+            Kaplan et. al (2020)
+          </a>
+          ,{" "}
+          <a
+            className="text-blue-300 hover:border-b hover:border-blue-300"
+            href="https://arxiv.org/abs/2203.15556"
+          >
+            Hoffman et. al (2022)
+          </a>
+          , and most recently with new results on varying modalities,{" "}
+          <a
+            className="text-blue-300 hover:border-b hover:border-blue-300"
+            href="https://arxiv.org/abs/2301.03728"
+          >
+            Aghajanyan et. al (2023)
+          </a>
+          . I do not make any claims about the accuracy of these predictions,
+          but merely provide a tool to try to easily calculate what these
+          predictions actually mean for your model.
         </p>
       </main>
-      <section className="w-full md:w-1/2 m-5">
-        <ModelSelector model={preset} models={models} setModel={switchPreset} />
-        <ModeSelector setMode={setMode} />
-        {mode === "optimal" && (
-          <div>
-            <h3 className="text-white text-xl">Optimal Model Size</h3>
-          </div>
-        )}
-        {mode === "cost" && (
-          <div>
-            <h3 className="text-white text-xl">Model Cost Finder</h3>
-          </div>
-        )}
+      <section className="w-2/3 m-5 mx-auto">
+        {/* <ModelSelector model={preset} models={models} setModel={switchPreset} /> */}
+        <h3 className="text-lg text-gray-200 ml-0 pt-2 border-t border-gray-200">
+          Choose a modality (data type)
+        </h3>
+        <Modalities
+          modalities={modalities}
+          modality={selectedModality}
+          setModality={setGlobalModality}
+        />
+        <h3 className="text-lg text-gray-200 ml-0 mt-3">
+          What do you want to calculate?
+        </h3>
+        <ModeSelector selected={selectedMode} setSelected={setSelectedMode} />
+        <div className="mt-5">
+          <Calculator
+            modality={selectedModality}
+            mode={selectedMode}
+            preset={"test"}
+          />
+        </div>
       </section>
+
+      <footer>
+        <p className="text-gray-300 text-sm text-center">
+          Made by{" "}
+          <a
+            className="text-blue-300 hover:border-b hover:border-blue-300"
+            href="https://twitter.com/calum-birdo"
+          >
+            Calum Bird
+          </a>
+          . Source code available on{" "}
+          <a
+            className="text-blue-300 hover:border-b hover:border-blue-300"
+            href="https://github.com/calum-bird/howmanyparams.com"
+          >
+            GitHub
+          </a>
+          .
+        </p>
+      </footer>
     </>
   );
 }

@@ -1,12 +1,44 @@
-const A = 406.4;
-const B = 410.7;
+// Default to code.
+let A = 611.91;
+let B = 4484.08;
+let E = 0.16;
 
-const alpha = 0.34;
-const beta = 0.28;
-//const alpha = 0.5;
-//const beta = 0.5;
+let alpha = 0.37;
+let beta = 0.32;
 
-// Funcs for pre-existing models
+const setModality = (modality: string) => {
+  switch (modality) {
+    case "code":
+      A = 611.91;
+      B = 4484.08;
+      E = 0.16;
+      alpha = 0.37;
+      beta = 0.32;
+      break;
+    case "text":
+      A = 492.51;
+      B = 1987.4;
+      E = 2.42;
+      alpha = 0.18;
+      beta = 0.22;
+      break;
+    case "image":
+      A = 340.96;
+      B = 875.3;
+      E = 2.84;
+      alpha = 0.13;
+      beta = 0.13;
+    case "speech":
+      A = 154.45;
+      B = 205.1;
+      E = 3.02;
+      alpha = 0.31;
+      beta = 0.24;
+      break;
+    default:
+      throw new Error("Invalid modality");
+  }
+};
 
 /**
  * Compute the predicted loss for a model trained with `n` billion parameters, on `d` billion tokens
@@ -22,7 +54,7 @@ const loss = (
   // n, d in billions
   n = n * 1e9;
   d = d * 1e9;
-  return 1.69 + A_ / n ** alpha_ + B_ / d ** beta_;
+  return E + A_ / n ** alpha_ + B_ / d ** beta_;
 };
 
 /**
@@ -55,4 +87,4 @@ const d_opt = (c: number, G_ = G, a_ = a, b_ = b) => {
   return ((1 / G_) * (c / 6) ** b_) / 1e9;
 };
 
-export { loss, flops, n_opt, d_opt };
+export { setModality, loss, flops, n_opt, d_opt };
