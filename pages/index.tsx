@@ -12,8 +12,8 @@ export default function Home() {
   const [selectedModality, setSelectedModality] = useState(modalities[0]);
 
   const setGlobalModality = (modality: string) => {
-    setSelectedModality(modality);
     setModality(modality);
+    setSelectedModality(modality);
   };
 
   return (

@@ -6,6 +6,15 @@ let E = 0.16;
 let alpha = 0.37;
 let beta = 0.32;
 
+// Funcs for optimal models
+const GetG = (_alpha: number, _A: number, _beta: number, _B: number) => {
+  return ((_alpha * _A) / (_beta * _B)) ** (1 / (_alpha + _beta));
+};
+
+let G = GetG(alpha, A, beta, B);
+let a = beta / (alpha + beta);
+let b = alpha / (alpha + beta);
+
 const setModality = (modality: string) => {
   switch (modality) {
     case "code":
@@ -38,6 +47,10 @@ const setModality = (modality: string) => {
     default:
       throw new Error("Invalid modality");
   }
+
+  G = GetG(alpha, A, beta, B);
+  a = beta / (alpha + beta);
+  b = alpha / (alpha + beta);
 };
 
 /**
@@ -66,12 +79,6 @@ const flops = (n: number, d: number) => {
   d = d * 1e9;
   return 6 * n * d;
 };
-
-// Funcs for optimal models
-const G = ((alpha * A) / (beta * B)) ** (1 / (alpha + beta));
-
-const a = beta / (alpha + beta);
-const b = alpha / (alpha + beta);
 
 /**
  * Compute the optimal number of parameters with which to train a model optimally using `c` FLOPS.

@@ -48,8 +48,30 @@ export default function Calculator({
   const [f, setF] = useState(0);
   const [l, setL] = useState(0);
 
-  useEffect(() => {
-    // Set defaults to preset
+  const [fBase, setFBase] = useState(0);
+  const [fExp, setFExp] = useState(0);
+
+  const updateFLOPs = () => {
+    // fBase * 10^fExp
+    let f = fBase * Math.pow(10, fExp);
+    setF(f);
+  };
+
+  const updateBaseAndExp = (f: number) => {
+    let fBase = 0;
+    let fExp = 0;
+
+    if (f > 0) {
+      // turn f into the form fBase * 10^fExp
+      fExp = Math.floor(Math.log10(f));
+      fBase = f / Math.pow(10, fExp);
+    }
+
+    setFBase(fBase);
+    setFExp(fExp);
+  };
+
+  const refreshCalculations = () => {
     if (hparams[preset] !== undefined) {
       setN(hparams[preset].n);
       setD(hparams[preset].d);
@@ -63,6 +85,7 @@ export default function Calculator({
     }
     if (config.enable_n && config.enable_d) {
       let f = flops(n, d);
+      updateBaseAndExp(f);
       setF(f);
     }
     if (config.enable_f) {
@@ -76,6 +99,8 @@ export default function Calculator({
       let n = n_opt(f);
       let d = d_opt(f);
       let l = loss(n, d);
+      console.log("n opt", n);
+      console.log("d opt", d);
       setL(l);
       setN(n);
       setD(d);
@@ -83,6 +108,7 @@ export default function Calculator({
     if (mode === "FLOPs") {
       let f = flops(n, d);
       let l = loss(n, d);
+      updateBaseAndExp(f);
       setF(f);
       setL(l);
     }
@@ -91,9 +117,13 @@ export default function Calculator({
       setD(d);
       setL(loss(n, d));
     }
+  };
+
+  useEffect(() => {
+    refreshCalculations();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [n, d, f, l, mode, preset, modality]);
+  }, [n, d, f, l, mode, modality]);
 
   return (
     <form className="space-y-8 divide-y divide-gray-500">
@@ -123,7 +153,9 @@ export default function Calculator({
                   disabled={!config.enable_n}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring-blue-300 sm:text-sm disabled:bg-gray-400"
                   value={n}
-                  onChange={(e) => setN(parseInt(e.target.value))}
+                  onChange={(e) => {
+                    setN(parseInt(e.target.value));
+                  }}
                 />
               </div>
             </div>
@@ -140,7 +172,9 @@ export default function Calculator({
                   disabled={!config.enable_d}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring-blue-300 sm:text-sm disabled:bg-gray-400"
                   value={d}
-                  onChange={(e) => setD(parseInt(e.target.value))}
+                  onChange={(e) => {
+                    setD(parseInt(e.target.value));
+                  }}
                 />
               </div>
             </div>
@@ -149,15 +183,29 @@ export default function Calculator({
                 htmlFor="last-name"
                 className="block text-sm font-medium text-gray-300"
               >
-                FLOPs (training budget, e21)
+                FLOPs (training budget)
               </label>
-              <div className="mt-1">
+              <div className="mt-1 flex">
                 <input
-                  type="text"
+                  type="number"
                   disabled={!config.enable_f}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring-blue-300 sm:text-sm disabled:bg-gray-400"
-                  value={f == 0 ? "" : (f / 1e21).toFixed(2)}
-                  onChange={(e) => setF(parseInt(e.target.value) * 1e21)}
+                  value={fBase}
+                  onChange={(e) => {
+                    setFBase(parseInt(e.target.value));
+                    updateFLOPs();
+                  }}
+                />
+                <code className="text-white text-md px-2 mt-3">e</code>
+                <input
+                  type="number"
+                  disabled={!config.enable_f}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring-blue-300 sm:text-sm disabled:bg-gray-400"
+                  value={fExp}
+                  onChange={(e) => {
+                    setFExp(parseInt(e.target.value));
+                    updateFLOPs();
+                  }}
                 />
               </div>
             </div>
@@ -175,7 +223,9 @@ export default function Calculator({
                   disabled={!config.enable_l}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring-blue-300 sm:text-sm disabled:bg-gray-400"
                   value={l}
-                  onChange={(e) => setL(parseInt(e.target.value))}
+                  onChange={(e) => {
+                    setL(parseInt(e.target.value));
+                  }}
                 />
               </div>
             </div>

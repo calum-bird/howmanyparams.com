@@ -24,7 +24,7 @@ export default function Modalities({
           onChange={(e) => {
             setModality(e.target.value);
           }}
-          value={(modality = "")}
+          value={modality}
         >
           {modalities.map((mp_modality) => (
             <option key={mp_modality} value={mp_modality}>
